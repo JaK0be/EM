@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<alloy>
+
+<view>
+
+<defaultnode/>
+
+<defaultedge/>
+
+<node>
+   <type name="blinkRight"/>
+   <type name="brakeLight"/>
+   <type name="Int"/>
+   <type name="Light"/>
+   <type name="lowBeamLeft"/>
+   <type name="lowBeamRight"/>
+   <type name="Off"/>
+   <type name="On"/>
+   <type name="String"/>
+   <type name="tailLamp"/>
+   <type name="ordering/Ord"/>
+</node>
+
+<node color="Gray">
+   <type name="univ"/>
+</node>
+
+<node color="Yellow" label="">
+   <set name="$LightsOn" type="Light"/>
+</node>
+
+<node hideunconnected="inherit">
+   <type name="seq/Int"/>
+</node>
+
+<node hideunconnected="no">
+   <type name="blinkLeft"/>
+</node>
+
+<node visible="no">
+   <type name="LightState"/>
+</node>
+
+<edge visible="no" attribute="no" constraint="yes">
+   <relation name="state"> <type name="Light"/> <type name="LightState"/> </relation>
+</edge>
+
+</view>
+
+</alloy>

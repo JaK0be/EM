@@ -1,0 +1,15 @@
+abstract sig Light {
+	state : one LightState
+}
+
+one sig blinkLeft, blinkRight,
+		lowBeamLeft, lowBeamRight,
+		brakeLight, tailLamp extends Light {}
+
+enum LightState { On, Off }
+
+fun LightsOn : set Light {
+	{ l : Light | l.state = On }
+}
+
+run {}
