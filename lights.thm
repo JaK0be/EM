@@ -10,14 +10,22 @@
 <node>
    <type name="blinkRight"/>
    <type name="brakeLight"/>
+   <type name="Downward5"/>
+   <type name="Downward7"/>
    <type name="Int"/>
+   <type name="KeyInIgnitionOnPosition"/>
+   <type name="KeyInserted"/>
    <type name="Light"/>
    <type name="lowBeamLeft"/>
    <type name="lowBeamRight"/>
-   <type name="Off"/>
-   <type name="On"/>
+   <type name="Neutral"/>
+   <type name="NoKeyInserted"/>
+   <type name="PitmanArm"/>
    <type name="String"/>
    <type name="tailLamp"/>
+   <type name="Upward5"/>
+   <type name="Upward7"/>
+   <type name="open$3/Ord"/>
    <type name="ordering/Ord"/>
 </node>
 
@@ -25,8 +33,8 @@
    <type name="univ"/>
 </node>
 
-<node color="Yellow" label="">
-   <set name="$LightsOn" type="Light"/>
+<node color="Red">
+   <type name="Ignition"/>
 </node>
 
 <node hideunconnected="inherit">
@@ -37,12 +45,21 @@
    <type name="blinkLeft"/>
 </node>
 
-<node visible="no">
-   <type name="LightState"/>
+<node showlabel="no" color="Yellow">
+   <set name="this/LightOn" type="Light"/>
 </node>
 
-<edge visible="no" attribute="no" constraint="yes">
-   <relation name="state"> <type name="Light"/> <type name="LightState"/> </relation>
+<node visible="no">
+   <type name="KeyState"/>
+   <type name="PitmanArmState"/>
+</node>
+
+<edge attribute="yes">
+   <relation name="state"> <type name="PitmanArm"/> <type name="PitmanArmState"/> </relation>
+</edge>
+
+<edge visible="no" attribute="yes">
+   <relation name="keyState"> <type name="Ignition"/> <type name="KeyState"/> </relation>
 </edge>
 
 </view>
