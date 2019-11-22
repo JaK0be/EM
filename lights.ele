@@ -1,20 +1,32 @@
 one sig Ignition {
 	var keyState : one KeyState
 }
-
 enum KeyState { NoKeyInserted, KeyInserted, KeyInIgnitionOnPosition }
 
 one sig PitmanArm {
 	var state : one PitmanArmState
 }
+enum PitmanArmState { Neutral, Downward5, Downward7, Upward5, Upward7/*, Backward, Frontward*/ }
 
-enum PitmanArmState { Neutral, Downward5, Downward7, Upward5, Upward7 }
+one sig HazardWarningSwitch{
+	var state : one HazardWarningSwitchState
+}
+enum HazardWarningSwitchState { On,Off }
+
+one sig Brake{
+	var state : one BrakeState
+}
+enum BrakeState { No, Normal, Full }
+
+one sig ReverseGear {
+	var state : one ReverseGearState
+}
+enum ReverseGearState{ NotEngaged, Engaged }
 
 abstract sig Light {}
-
 one sig blinkLeft, blinkRight,
 		lowBeamLeft, lowBeamRight,
-		brakeLight, tailLamp extends Light {}
+		brakeLight, tailLamp, reverseLight extends Light {}
 
 var sig LightOn in Light {}
 
@@ -25,6 +37,12 @@ fact {
 fact {
 	always (
 		blinkLeft in LightOn implies once (PitmanArm.state = Downward5 or PitmanArm.state = Downward7)
+	)
+}
+
+fact {
+	always (
+		blinkRight in LightOn implies once (PitmanArm.state = Upward5 or PitmanArm.state = Upward7)
 	)
 }
 
@@ -82,6 +100,7 @@ pred blinkRight7 {
 	keyState' = keyState
 }
 
+
 pred skip {
 	LightOn' = LightOn
 	keyState' = keyState
@@ -90,6 +109,8 @@ pred skip {
 fact init {
 	Ignition.keyState = NoKeyInserted
 	PitmanArm.state = Neutral
+	HazardWarningSwitch.state = Off
+	ReverseGear.state = NotEngaged 
 }
 
 pred pitman {
@@ -97,12 +118,27 @@ pred pitman {
 	PitmanArm.state in Upward5 + Downward5 implies PitmanArm.state' = Neutral
 }
 
+pred hazard{
+	HazardWarningSwitch.state = Off
+	HazardWarningSwitch.state' = On
+	LightOn' = LightOn + (blinkRight + blinkLeft)
+	keyState' = keyState
+}
+
+pred reverse{
+	ReverseGear.state = NotEngaged 
+	ReverseGear.state' = Engaged
+	LightOn' = LightOn + tailLamp
+	keyState' = keyState	
+}
+
 fact transitions {
 	always (
 		putKeyOnIgnition or putKeyOnPosition or
 		blinkLeft5 or blinkLeft7 or blinkRight5 or blinkRight7 or
+		hazard or reverse or
 		skip
 		) and pitman
 }
 
-run { eventually some LightOn and (eventually PitmanArm.state = Upward5) }
+run { eventually some LightOn and (eventually reverse) }
