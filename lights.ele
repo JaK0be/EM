@@ -26,7 +26,7 @@ enum ReverseGearState{ NotEngaged, Engaged }
 abstract sig Light {}
 one sig blinkLeft, blinkRight,
 		lowBeamLeft, lowBeamRight,
-		brakeLight, tailLamp, reverseLight extends Light {}
+		sideBrakeLights, middleBrakeLight, tailLamp, reverseLight extends Light {}
 
 var sig LightOn in Light {}
 
@@ -132,11 +132,27 @@ pred reverse{
 	keyState' = keyState	
 }
 
+pred normalBraking{
+	Brake.state = No
+	Brake.state' = Normal
+	LightOn' = LightOn + (sideBrakeLights + middleBrakeLight)
+	keyState' = keyState
+}
+
+/*
+pred fullBraking{
+	Brake.state = No
+	Brake.state' = Full
+	LightOn' = LightOn + (sideBrakeLights + middleBrakeLight) //A middleBrakeLight necessita de estar a piscar
+	keyState' = keyState
+}
+*/
+
 fact transitions {
 	always (
 		putKeyOnIgnition or putKeyOnPosition or
 		blinkLeft5 or blinkLeft7 or blinkRight5 or blinkRight7 or
-		hazard or reverse or
+		hazard or reverse or normalBraking or
 		skip
 		) and pitman
 }
