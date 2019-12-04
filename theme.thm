@@ -8,30 +8,23 @@
 <defaultedge/>
 
 <node>
-   <type name="Brake"/>
-   <type name="BrakeState"/>
    <type name="Downward5"/>
    <type name="Downward7"/>
    <type name="Engaged"/>
    <type name="Full"/>
-   <type name="HazardWarningSwitch"/>
-   <type name="HazardWarningSwitchState"/>
    <type name="Int"/>
    <type name="KeyInIgnitionOnPosition"/>
    <type name="KeyInserted"/>
    <type name="Light"/>
    <type name="Neutral"/>
-   <type name="No"/>
    <type name="NoKeyInserted"/>
+   <type name="None"/>
    <type name="Normal"/>
    <type name="NotEngaged"/>
    <type name="Off"/>
    <type name="On"/>
-   <type name="PitmanArm"/>
-   <type name="ReverseGear"/>
-   <type name="ReverseGearState"/>
    <type name="String"/>
-   <type name="tailLamp"/>
+   <type name="univ"/>
    <type name="Upward5"/>
    <type name="Upward7"/>
    <type name="open$3/Ord"/>
@@ -39,42 +32,50 @@
    <type name="open$5/Ord"/>
    <type name="open$6/Ord"/>
    <type name="ordering/Ord"/>
-</node>
-
-<node color="Gray">
-   <type name="univ"/>
-</node>
-
-<node color="Red">
-   <type name="Ignition"/>
-</node>
-
-<node hideunconnected="inherit">
    <type name="seq/Int"/>
 </node>
 
-<node showlabel="no" color="Yellow">
+<node color="Blue">
+   <type name="HazardWarningSwitch"/>
+</node>
+
+<node color="Gray">
+   <type name="ReverseGear"/>
+</node>
+
+<node color="Green">
+   <type name="PitmanArm"/>
+</node>
+
+<node color="Red">
+   <type name="Brake"/>
+</node>
+
+<node color="Yellow">
+   <type name="Ignition"/>
+</node>
+
+<node shape="Circle" color="Green">
    <set name="this/LightOn" type="Light"/>
 </node>
 
 <node visible="no">
-   <type name="KeyState"/>
-   <type name="PitmanArmState"/>
-</node>
-
-<node visible="yes">
+   <type name="blinkLeft"/>
    <type name="blinkRight"/>
-   <type name="brakeLight"/>
+   <type name="BrakeState"/>
+   <type name="HazardWarningSwitchState"/>
+   <type name="KeyState"/>
    <type name="lowBeamLeft"/>
    <type name="lowBeamRight"/>
+   <type name="middleBrakeLight"/>
+   <type name="PitmanArmState"/>
+   <type name="ReverseGearState"/>
    <type name="reverseLight"/>
+   <type name="sideBrakeLights"/>
+   <type name="tailLamp"/>
 </node>
 
-<node visible="yes" hideunconnected="no">
-   <type name="blinkLeft"/>
-</node>
-
-<edge attribute="yes">
+<edge visible="no" attribute="yes">
    <relation name="keyState"> <type name="Ignition"/> <type name="KeyState"/> </relation>
    <relation name="state"> <type name="Brake"/> <type name="BrakeState"/> </relation>
    <relation name="state"> <type name="HazardWarningSwitch"/> <type name="HazardWarningSwitchState"/> </relation>
