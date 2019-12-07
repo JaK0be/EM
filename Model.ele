@@ -6,7 +6,7 @@ enum KeyState { NoKeyInserted, KeyInserted, KeyInIgnitionOnPosition }
 one sig PitmanArm {
 	var state : one PitmanArmState
 }
-enum PitmanArmState { Neutral, Downward5, Downward7, Upward5, Upward7/*, Backward, Frontward*/ }
+enum PitmanArmState { Neutral, Downward5, Downward7, Upward5, Upward7, Backward, Frontward }
 
 one sig HazardWarningSwitch{
 	var state : one HazardWarningSwitchState
@@ -25,26 +25,19 @@ enum ReverseGearState{ NotEngaged, Engaged }
 
 abstract sig Light {}
 one sig blinkLeft, blinkRight,
-			lowBeamLeft, lowBeamRight,
-			sideBrakeLights, middleBrakeLight,
-			tailLamp, reverseLight extends Light {}
+		lowBeamLeft, lowBeamRight,
+		sideBrakeLights, middleBrakeLight,
+		reverseLight extends Light {}
+
+one sig highBeamLights extends Light {
+	var pattern : one highBeamPattern
+}
+
 var sig LightOn in Light {}
 
-fact { --Para existirem luzes ligadas é necessário a ignição estar ligada
-	always ((some LightOn) implies Ignition.keyState = KeyInIgnitionOnPosition)
-}
+enum highBeamPattern { AlwaysOff, Temporary, AlwaysOn }
 
-fact {
-	always (
-		blinkLeft in LightOn implies once (PitmanArm.state = Downward5 or PitmanArm.state = Downward7 or HazardWarningSwitch.state=On)
-	)
-}
-
-fact {
-	always (
-		blinkRight in LightOn implies once (PitmanArm.state = Upward5 or PitmanArm.state = Upward7 or HazardWarningSwitch.state=On)
-	)
-}
+// predicados que representam transições
 
 pred putKeyOnIgnition {-- Não limitei o comportamento dos "piscas" pois estes podem ser ligados em qualquer instante
 	Ignition.keyState = NoKeyInserted
@@ -53,6 +46,8 @@ pred putKeyOnIgnition {-- Não limitei o comportamento dos "piscas" pois estes p
 	PitmanArm.state' = PitmanArm.state
 	ReverseGear.state' = ReverseGear.state
 	Brake.state' = Brake.state
+	HazardWarningSwitch.state' = HazardWarningSwitch.state
+	highBeamsPattern
 }
 
 pred putKeyOnPosition {-- Não limitei o comportamento dos "piscas" pois estes podem ser ligados em qualquer instante
@@ -62,42 +57,76 @@ pred putKeyOnPosition {-- Não limitei o comportamento dos "piscas" pois estes p
 	PitmanArm.state' = PitmanArm.state
 	ReverseGear.state' = ReverseGear.state
 	Brake.state' = Brake.state
+	HazardWarningSwitch.state' = HazardWarningSwitch.state
+	highBeamsPattern
 }
 
 pred blinkLeft5 {
+	Ignition.keyState = KeyInIgnitionOnPosition
 	PitmanArm.state = Neutral
 	PitmanArm.state' = Downward5
 	LightOn' = LightOn + blinkLeft - blinkRight
 	keyState' = keyState
 	ReverseGear.state' = ReverseGear.state
 	Brake.state' = Brake.state
+	HazardWarningSwitch.state' = HazardWarningSwitch.state
+	highBeamsPattern
 }
 
 pred blinkLeft7 {
+	Ignition.keyState = KeyInIgnitionOnPosition
 	PitmanArm.state = Neutral
 	PitmanArm.state' = Downward7
 	LightOn' = LightOn + blinkLeft - blinkRight
 	keyState' = keyState
 	ReverseGear.state' = ReverseGear.state
 	Brake.state' = Brake.state
+	HazardWarningSwitch.state' = HazardWarningSwitch.state
+	highBeamsPattern
 }
 
 pred blinkRight5 {
+	Ignition.keyState = KeyInIgnitionOnPosition
 	PitmanArm.state = Neutral
 	PitmanArm.state' = Upward5
 	LightOn' = LightOn + blinkRight - blinkLeft
 	keyState' = keyState
 	ReverseGear.state' = ReverseGear.state
 	Brake.state' = Brake.state
+	HazardWarningSwitch.state' = HazardWarningSwitch.state
+	highBeamsPattern
 }
 
 pred blinkRight7 {
+	Ignition.keyState = KeyInIgnitionOnPosition
 	PitmanArm.state = Neutral
 	PitmanArm.state' = Upward7
 	LightOn' = LightOn + blinkRight - blinkLeft
 	keyState' = keyState
 	ReverseGear.state' = ReverseGear.state
 	Brake.state' = Brake.state
+	HazardWarningSwitch.state' = HazardWarningSwitch.state
+	highBeamsPattern
+}
+
+pred pitmanBackward {
+	PitmanArm.state = Neutral
+	PitmanArm.state' = Backward
+	highBeamLights.pattern' = AlwaysOn
+	keyState' = keyState
+	ReverseGear.state' = ReverseGear.state
+	Brake.state' = Brake.state
+	HazardWarningSwitch.state' = HazardWarningSwitch.state
+}
+
+pred pitmanBackwardOff {
+	PitmanArm.state = Backward
+	PitmanArm.state' = Neutral
+	highBeamLights.pattern' = AlwaysOff
+	keyState' = keyState
+	ReverseGear.state' = ReverseGear.state
+	Brake.state' = Brake.state
+	HazardWarningSwitch.state' = HazardWarningSwitch.state
 }
 
 pred skip {
@@ -107,19 +136,7 @@ pred skip {
 	HazardWarningSwitch.state' = HazardWarningSwitch.state
 	ReverseGear.state' = ReverseGear.state
 	Brake.state' = Brake.state
-}
-
-fact init {
-	Ignition.keyState = NoKeyInserted
-	PitmanArm.state = Neutral
-	HazardWarningSwitch.state = Off
-	ReverseGear.state = NotEngaged
-	Brake.state = None 
-}
-
-pred pitman {
-	PitmanArm.state in PitmanArmState - (Upward5 + Downward5) implies PitmanArm.state' = PitmanArm.state
-	PitmanArm.state in Upward5 + Downward5 implies PitmanArm.state' = Neutral
+	highBeamsPattern
 }
 
 pred hazard{
@@ -130,24 +147,27 @@ pred hazard{
 	ReverseGear.state' = ReverseGear.state
 	Brake.state' = Brake.state
 	PitmanArm.state' = PitmanArm.state
+	highBeamsPattern
 }
 
 pred reverse{
 	ReverseGear.state = NotEngaged 
 	ReverseGear.state' = Engaged
-	LightOn' = LightOn + tailLamp
+	LightOn' = LightOn + reverseLight
 	keyState' = keyState
 	Brake.state' = Brake.state
 	PitmanArm.state' = PitmanArm.state
+	highBeamsPattern
 }
 
 pred outReverse{
 	ReverseGear.state = Engaged 
 	ReverseGear.state' = NotEngaged
-	LightOn' = LightOn - tailLamp
+	LightOn' = LightOn - reverseLight
 	keyState' = keyState
 	Brake.state' = Brake.state
 	PitmanArm.state' = PitmanArm.state
+	highBeamsPattern
 }
 
 pred normalBraking{
@@ -157,6 +177,7 @@ pred normalBraking{
 	keyState' = keyState
 	ReverseGear.state' = ReverseGear.state
 	PitmanArm.state' = PitmanArm.state
+	highBeamsPattern
 }
 
 pred fullBraking{ //NOTA: Preciso de verificar nos requisitos se altera os piscas
@@ -166,6 +187,19 @@ pred fullBraking{ //NOTA: Preciso de verificar nos requisitos se altera os pisca
 	keyState' = keyState
 	ReverseGear.state' = ReverseGear.state
 	PitmanArm.state' = PitmanArm.state
+	highBeamsPattern
+}
+
+// estado inicial e transições
+
+fact init {
+	Ignition.keyState = NoKeyInserted
+	PitmanArm.state = Neutral
+	HazardWarningSwitch.state = Off
+	ReverseGear.state = NotEngaged
+	Brake.state = None
+	no LightOn
+	highBeamLights.pattern = AlwaysOff
 }
 
 fact transitions {
@@ -174,8 +208,57 @@ fact transitions {
 		blinkLeft5 or blinkLeft7 or blinkRight5 or blinkRight7 or hazard or
 		reverse or outReverse or
 		normalBraking or fullBraking or
+		pitmanBackward or pitmanBackwardOff or
 		skip
 		) and pitman
 }
 
-run { eventually some LightOn and (eventually reverse) }
+// outros factos
+
+fact lights {
+	always (
+		highBeamLights.pattern in (Temporary + AlwaysOn) implies highBeamLights in LightOn
+	)
+}
+
+// predicados auxiliares
+
+pred highBeamsPattern {
+	highBeamLights.pattern != Temporary implies highBeamLights.pattern' = highBeamLights.pattern
+	highBeamLights.pattern = Temporary implies highBeamLights.pattern' != AlwaysOn
+}
+
+pred pitman {
+	PitmanArm.state in PitmanArmState - (Upward5 + Downward5) implies PitmanArm.state' = PitmanArm.state
+	PitmanArm.state in Upward5 + Downward5 implies PitmanArm.state' = Neutral
+}
+
+/*fact { --Para existirem luzes ligadas é necessário a ignição estar ligada
+	always ((some LightOn) implies Ignition.keyState = KeyInIgnitionOnPosition)
+}*/
+
+// ambiente de execução
+
+assert A {
+	always ((blinkLeft in LightOn) implies
+		(Ignition.keyState = KeyInIgnitionOnPosition or
+			HazardWarningSwitch.state=On or
+			ReverseGear.state=Engaged or
+			Brake.state!=None))
+}
+
+assert B {
+	always (
+		blinkLeft in LightOn implies once (PitmanArm.state = Downward5 or PitmanArm.state = Downward7 or HazardWarningSwitch.state=On)
+	)
+}
+
+assert C {
+	always (
+		blinkRight in LightOn implies once (PitmanArm.state = Upward5 or PitmanArm.state = Upward7 or HazardWarningSwitch.state=On)
+	)
+}
+
+run {eventually pitmanBackward}
+
+//run { eventually some LightOn and (eventually reverse) }

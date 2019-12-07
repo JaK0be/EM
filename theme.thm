@@ -8,10 +8,15 @@
 <defaultedge/>
 
 <node>
+   <type name="AlwaysOff"/>
+   <type name="AlwaysOn"/>
+   <type name="Backward"/>
    <type name="Downward5"/>
    <type name="Downward7"/>
    <type name="Engaged"/>
+   <type name="Frontward"/>
    <type name="Full"/>
+   <type name="highBeamLights"/>
    <type name="Int"/>
    <type name="KeyInIgnitionOnPosition"/>
    <type name="KeyInserted"/>
@@ -24,6 +29,7 @@
    <type name="Off"/>
    <type name="On"/>
    <type name="String"/>
+   <type name="Temporary"/>
    <type name="univ"/>
    <type name="Upward5"/>
    <type name="Upward7"/>
@@ -31,6 +37,7 @@
    <type name="open$4/Ord"/>
    <type name="open$5/Ord"/>
    <type name="open$6/Ord"/>
+   <type name="open$7/Ord"/>
    <type name="ordering/Ord"/>
    <type name="seq/Int"/>
 </node>
@@ -64,6 +71,7 @@
    <type name="blinkRight"/>
    <type name="BrakeState"/>
    <type name="HazardWarningSwitchState"/>
+   <type name="highBeamPattern"/>
    <type name="KeyState"/>
    <type name="lowBeamLeft"/>
    <type name="lowBeamRight"/>
@@ -72,8 +80,11 @@
    <type name="ReverseGearState"/>
    <type name="reverseLight"/>
    <type name="sideBrakeLights"/>
-   <type name="tailLamp"/>
 </node>
+
+<edge attribute="yes">
+   <relation name="pattern"> <type name="highBeamLights"/> <type name="highBeamPattern"/> </relation>
+</edge>
 
 <edge visible="no" attribute="yes">
    <relation name="keyState"> <type name="Ignition"/> <type name="KeyState"/> </relation>
