@@ -140,6 +140,30 @@ pred pitmanBackwardOff {
 	HazardWarningSwitch.state' = HazardWarningSwitch.state
 }
 
+pred pitmanFrontward {	
+	Ignition.keyState = KeyInIgnitionOnPosition
+	PitmanArm.deepState = Neutro
+	PitmanArm.deepState' = Frontward
+	highBeamLights.pattern' = Temporary
+	PitmanArm.heightState' = PitmanArm.heightState
+	keyState' = keyState
+	ReverseGear.state' = ReverseGear.state
+	Brake.state' = Brake.state
+	HazardWarningSwitch.state' = HazardWarningSwitch.state
+}
+
+pred pitmanFrontwardOff {
+	Ignition.keyState = KeyInIgnitionOnPosition
+	PitmanArm.deepState' = Frontward
+	PitmanArm.deepState = Neutro
+	highBeamLights.pattern' = AlwaysOff
+	PitmanArm.heightState' = PitmanArm.heightState
+	keyState' = keyState
+	ReverseGear.state' = ReverseGear.state
+	Brake.state' = Brake.state
+	HazardWarningSwitch.state' = HazardWarningSwitch.state
+}
+
 pred skip {
 	LightOn' = LightOn
 	keyState' = keyState
@@ -227,6 +251,7 @@ fact transitions {
 		reverse or outReverse or
 		normalBraking or fullBraking or
 		pitmanBackward or pitmanBackwardOff or
+		pitmanFrontward or pitmanFrontwardOff or
 		skip
 		) and pitman
 }
@@ -287,6 +312,6 @@ assert D {
 
 //run {eventually pitmanBackward}
 
-run{eventually blinkLeft7}
+run{eventually pitmanFrontward}
 
 //run { eventually some LightOn and (eventually reverse) }
