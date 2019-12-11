@@ -8,7 +8,7 @@ one sig PitmanArm {
 	var deepState : one DeepPitmanArmState
 }
 
-enum HeightPitmanArmState { Neutral, Downward5, Downward7, Upward5, Upward7}
+enum HeightPitmanArmState { Neutral, Downward7, Upward7}
 enum DeepPitmanArmState { Neutro,Backward,Forward}
 
 one sig HazardWarningSwitch{
@@ -38,6 +38,12 @@ one sig middleBrakeLight extends Light {
 
 enum middleBrakeLightPattern { MBL_Off, MBL_On}
 
+one sig turnLight {
+	var pattern : one TurnLightPattern
+}
+
+enum TurnLightPattern { TL_On, TL_Off }
+
 var sig LightOn in Light {}
 
 // predicados que representam transições
@@ -46,67 +52,52 @@ pred putKeyOnIgnition {-- Não limitei o comportamento dos "piscas" pois estes p
 	Ignition.keyState = NoKeyInserted
 	Ignition.keyState' = KeyInserted
 	ReverseGear.state' = ReverseGear.state
+	PitmanArm.deepState' = PitmanArm.deepState
+	PitmanArm.heightState' = PitmanArm.heightState
 	Brake.state' = Brake.state
 	HazardWarningSwitch.state' = HazardWarningSwitch.state
-	pitman
+	LightOn' - (blinkLeft + blinkRight + middleBrakeLight) =
+		LightOn - (blinkLeft + blinkRight + middleBrakeLight)
 }
 
 pred putKeyOnPosition {-- Não limitei o comportamento dos "piscas" pois estes podem ser ligados em qualquer instante
 	Ignition.keyState = KeyInserted
 	Ignition.keyState' = KeyInIgnitionOnPosition
 	ReverseGear.state' = ReverseGear.state
+	PitmanArm.deepState' = PitmanArm.deepState
+	PitmanArm.heightState' = PitmanArm.heightState
 	Brake.state' = Brake.state
 	HazardWarningSwitch.state' = HazardWarningSwitch.state
-	pitman
-}
-
-pred blinkLeft5 {
-	Ignition.keyState = KeyInIgnitionOnPosition
-	blinkLeft in LightOn'
-	blinkRight not in LightOn'
-	PitmanArm.heightState = Neutral
-	PitmanArm.heightState' = Downward5
-	keyState' = keyState
-	ReverseGear.state' = ReverseGear.state
-	Brake.state' = Brake.state
-	HazardWarningSwitch.state' = HazardWarningSwitch.state
+	LightOn' - (blinkLeft + blinkRight + middleBrakeLight) =
+		LightOn - (blinkLeft + blinkRight + middleBrakeLight)
 }
 
 pred blinkLeft7 {
 	Ignition.keyState = KeyInIgnitionOnPosition
-	blinkLeft in LightOn'
-	blinkRight not in LightOn'
 	PitmanArm.heightState = Neutral
 	PitmanArm.heightState' = Downward7
-	LightOn' = LightOn + blinkLeft - blinkRight
+	PitmanArm.deepState' = PitmanArm.deepState
+	turnLight.pattern' = TL_On
 	keyState' = keyState
 	ReverseGear.state' = ReverseGear.state
 	Brake.state' = Brake.state
 	HazardWarningSwitch.state' = HazardWarningSwitch.state
-}
-
-pred blinkRight5 {
-	Ignition.keyState = KeyInIgnitionOnPosition
-	blinkRight in LightOn'
-	blinkLeft not in LightOn'
-	PitmanArm.heightState = Neutral
-	PitmanArm.heightState' = Upward5
-	keyState' = keyState
-	ReverseGear.state' = ReverseGear.state
-	Brake.state' = Brake.state
-	HazardWarningSwitch.state' = HazardWarningSwitch.state
+	LightOn' - (blinkLeft + blinkRight + middleBrakeLight) =
+		LightOn - (blinkLeft + blinkRight + middleBrakeLight)
 }
 
 pred blinkRight7 {
 	Ignition.keyState = KeyInIgnitionOnPosition
-	blinkRight in LightOn'
-	blinkLeft not in LightOn'
 	PitmanArm.heightState = Neutral
 	PitmanArm.heightState' = Upward7
+	PitmanArm.deepState' = PitmanArm.deepState
+	turnLight.pattern' = TL_On
 	keyState' = keyState
 	ReverseGear.state' = ReverseGear.state
 	Brake.state' = Brake.state
 	HazardWarningSwitch.state' = HazardWarningSwitch.state
+	LightOn' - (blinkLeft + blinkRight + middleBrakeLight) =
+		LightOn - (blinkLeft + blinkRight + middleBrakeLight)
 }
 
 pred pitmanBackward {
@@ -118,6 +109,8 @@ pred pitmanBackward {
 	ReverseGear.state' = ReverseGear.state
 	Brake.state' = Brake.state
 	HazardWarningSwitch.state' = HazardWarningSwitch.state
+	LightOn' - (highBeamLights + blinkLeft + blinkRight + middleBrakeLight) =
+		LightOn - (highBeamLights + blinkLeft + blinkRight + middleBrakeLight)
 }
 
 pred pitmanBackwardOff {
@@ -129,6 +122,8 @@ pred pitmanBackwardOff {
 	ReverseGear.state' = ReverseGear.state
 	Brake.state' = Brake.state
 	HazardWarningSwitch.state' = HazardWarningSwitch.state
+	LightOn' - (highBeamLights + blinkLeft + blinkRight + middleBrakeLight) =
+		LightOn - (highBeamLights + blinkLeft + blinkRight + middleBrakeLight)
 }
 
 pred pitmanForward {
@@ -140,6 +135,8 @@ pred pitmanForward {
 	ReverseGear.state' = ReverseGear.state
 	Brake.state' = Brake.state
 	HazardWarningSwitch.state' = HazardWarningSwitch.state
+	LightOn' - (highBeamLights + blinkLeft + blinkRight + middleBrakeLight) =
+		LightOn - (highBeamLights + blinkLeft + blinkRight + middleBrakeLight)
 }
 
 pred pitmanForwardOff {
@@ -151,6 +148,8 @@ pred pitmanForwardOff {
 	ReverseGear.state' = ReverseGear.state
 	Brake.state' = Brake.state
 	HazardWarningSwitch.state' = HazardWarningSwitch.state
+	LightOn' - (highBeamLights + blinkLeft + blinkRight + middleBrakeLight) =
+		LightOn - (highBeamLights + blinkLeft + blinkRight + middleBrakeLight)
 }
 
 
@@ -161,19 +160,20 @@ pred skip {
 	HazardWarningSwitch.state' = HazardWarningSwitch.state
 	ReverseGear.state' = ReverseGear.state
 	Brake.state' = Brake.state
-	pitman
+	LightOn' - (blinkLeft + blinkRight + middleBrakeLight) =
+		LightOn - (blinkLeft + blinkRight + middleBrakeLight)
 }
 
 pred hazard{
 	HazardWarningSwitch.state = Off
 	HazardWarningSwitch.state' = On
-	(blinkRight + blinkLeft) in LightOn'
 	keyState' = keyState
 	ReverseGear.state' = ReverseGear.state
 	Brake.state' = Brake.state
 	PitmanArm.deepState' = PitmanArm.deepState
 	PitmanArm.heightState' = PitmanArm.heightState
-	pitman
+	LightOn' - (blinkLeft + blinkRight + middleBrakeLight) =
+		LightOn - (blinkLeft + blinkRight + middleBrakeLight)
 }
 
 pred hazardOff {
@@ -185,7 +185,8 @@ pred hazardOff {
 	Brake.state' = Brake.state
 	PitmanArm.deepState' = PitmanArm.deepState
 	PitmanArm.heightState' = PitmanArm.heightState
-	pitman
+	LightOn' - (blinkLeft + blinkRight + middleBrakeLight) =
+		LightOn - (blinkLeft + blinkRight + middleBrakeLight)
 }
 
 
@@ -195,9 +196,11 @@ pred reverse{
 	reverseLight in LightOn'
 	keyState' = keyState
 	Brake.state' = Brake.state
+	HazardWarningSwitch.state = HazardWarningSwitch.state'
 	PitmanArm.deepState' = PitmanArm.deepState
 	PitmanArm.heightState' = PitmanArm.heightState
-	pitman
+	LightOn' - (reverseLight + blinkLeft + blinkRight + middleBrakeLight) =
+		LightOn - (reverseLight + blinkLeft + blinkRight + middleBrakeLight)
 }
 
 pred outReverse{
@@ -206,9 +209,11 @@ pred outReverse{
 	reverseLight not in LightOn'
 	keyState' = keyState
 	Brake.state' = Brake.state
+	HazardWarningSwitch.state = HazardWarningSwitch.state'
 	PitmanArm.deepState' = PitmanArm.deepState
 	PitmanArm.heightState' = PitmanArm.heightState
-	pitman
+	LightOn' - (reverseLight + blinkLeft + blinkRight + middleBrakeLight) =
+		LightOn - (reverseLight + blinkLeft + blinkRight + middleBrakeLight)
 }
 
 pred normalBraking{
@@ -217,9 +222,11 @@ pred normalBraking{
 	sideBrakeLights in LightOn'
 	keyState' = keyState
 	ReverseGear.state' = ReverseGear.state
+	HazardWarningSwitch.state = HazardWarningSwitch.state'
 	PitmanArm.deepState' = PitmanArm.deepState
 	PitmanArm.heightState' = PitmanArm.heightState
-	pitman
+	LightOn' - (sideBrakeLights + blinkLeft + blinkRight + middleBrakeLight) =
+		LightOn - (sideBrakeLights + blinkLeft + blinkRight + middleBrakeLight)
 }
 
 pred fullBraking{
@@ -229,10 +236,11 @@ pred fullBraking{
 	middleBrakeLight.pattern' = MBL_On
 	keyState' = keyState
 	ReverseGear.state' = ReverseGear.state
+	HazardWarningSwitch.state = HazardWarningSwitch.state'
 	PitmanArm.deepState' = PitmanArm.deepState
 	PitmanArm.heightState' = PitmanArm.heightState
-	//middleBrakeLight.pattern' = MBL_Blinking_On
-	pitman
+	LightOn' - (sideBrakeLights + blinkLeft + blinkRight + middleBrakeLight) =
+		LightOn - (sideBrakeLights + blinkLeft + blinkRight + middleBrakeLight)
 }
 
 pred stopBraking {
@@ -240,9 +248,11 @@ pred stopBraking {
 	Brake.state' = None
 	keyState' = keyState
 	ReverseGear.state' = ReverseGear.state
+	HazardWarningSwitch.state = HazardWarningSwitch.state'
 	PitmanArm.deepState' = PitmanArm.deepState
 	PitmanArm.heightState' = PitmanArm.heightState
-	pitman
+	LightOn' - (sideBrakeLights + blinkLeft + blinkRight + middleBrakeLight) =
+		LightOn - (sideBrakeLights + blinkLeft + blinkRight + middleBrakeLight)
 }
 
 // estado inicial e transições
@@ -260,7 +270,7 @@ fact init {
 fact transitions {
 	always (
 		putKeyOnIgnition or putKeyOnPosition or
-		blinkLeft5 or blinkLeft7 or blinkRight5 or blinkRight7 or hazard or
+		blinkLeft7 or blinkRight7 or hazard or
 		reverse or outReverse or
 		normalBraking or fullBraking or stopBraking or
 		pitmanBackward or pitmanBackwardOff or
@@ -274,23 +284,7 @@ fact transitions {
 fact lights {
 	always (
 		PitmanArm.deepState in (Forward + Backward) implies highBeamLights in LightOn and
-		//Brake.state = None implies not middleBrakeLight in LightOn and
-		//Brake.state = Normal implies middleBrakeLight in LightOn and
-		//Brake.state = Full implies ((
-		//	(middleBrakeLight not in LightOn implies middleBrakeLight in LightOn') and
-		//	(middleBrakeLight in LightOn implies middleBrakeLight not in LightOn')) until Brake.state != Full)
-		//middleBrakeLight.pattern in (MBL_Off + MBL_Blinking_Off) implies middleBrakeLight not in LightOn and
-		//middleBrakeLight.pattern in (MBL_On + MBL_Blinking_On) implies middleBrakeLight in LightOn and
-		//middleBrakeLight.pattern = MBL_Blinking_On implies (middleBrakeLight in LightOn until
-		//	(after (middleBrakeLight.pattern = MBL_Blinking_Off or middleBrakeLight.pattern = MBL_Off))) and
-		//middleBrakeLight.pattern = MBL_Off iff Brake.state = None and
-		//middleBrakeLight.pattern = MBL_On iff Brake.state = Normal and
-		//(middleBrakeLight.pattern = MBL_Blinking_On implies middleBrakeLight.pattern' = MBL_Blinking_Off and 
-		//middleBrakeLight.pattern = MBL_Blinking_Off implies middleBrakeLight.pattern' = MBL_Blinking_On)
-		//ReverseGear.state = Engaged implies reverseLight in LightOn  and	
-		//reverseLight not in LightOn iff ReverseGear.state = NotEngaged
-		(not (reverse or outReverse)) implies (reverseLight in LightOn iff reverseLight in LightOn') and
-		(not (normalBraking or fullBraking)) implies (sideBrakeLights in LightOn iff sideBrakeLights in LightOn')
+		HazardWarningSwitch.state = On implies ((blinkLeft + blinkRight) in LightOn)
 	)
 }
 
@@ -307,11 +301,28 @@ fun middleBrakeBlink : some middleBrakeLight {
 	(middleBrakeLight.pattern = MBL_On and Brake.state = Full) implies middleBrakeLight else none
 }
 
+// blinking turn lights
+fact {
+	always (
+		(not (blinkLeft7 or blinkRight7 or hazard) implies (turnLight.pattern = TL_On implies turnLight.pattern' = TL_Off) and
+		(turnLight.pattern = TL_Off implies turnLight.pattern' = TL_On)) and
+		turnLightsBlink in LightOn and ((blinkLeft + blinkRight) - turnLightsBlink not in LightOn or HazardWarningSwitch.state = On) and
+		(HazardWarningSwitch.state = On implies (blinkLeft + blinkRight) in LightOn) and
+		(PitmanArm.deepState in (Forward + Backward) implies highBeamLights in LightOn)
+	)
+}
+
+fun turnLightsBlink : some (blinkLeft + blinkRight) {
+	(turnLight.pattern = TL_On and PitmanArm.heightState = Downward7) implies blinkLeft else
+	(turnLight.pattern = TL_On and PitmanArm.heightState = Upward7) implies blinkRight else
+	none
+}
+
 // predicados auxiliares
 
 pred pitman {
-	PitmanArm.heightState in HeightPitmanArmState - (Upward5 + Downward5) implies PitmanArm.heightState' = PitmanArm.heightState
-	PitmanArm.heightState in Upward5 + Downward5 implies PitmanArm.heightState' = Neutral
+	{}//PitmanArm.heightState in HeightPitmanArmState - (Upward5 + Downward5) implies PitmanArm.heightState' = PitmanArm.heightState
+	//PitmanArm.heightState in Upward5 + Downward5 implies PitmanArm.heightState' = Neutral
 }
 
 /*
@@ -321,36 +332,6 @@ fact { --Para existirem luzes ligadas é necessário a ignição estar ligada
 
 // ambiente de execução
 
-/*
-assert A {
-	always ((blinkLeft in LightOn) implies
-		(Ignition.keyState = KeyInIgnitionOnPosition or
-			HazardWarningSwitch.state=On or
-			ReverseGear.state=Engaged or
-			Brake.state!=None))
-}*/
-
-assert B {
-	always (
-		(blinkLeft in LightOn and blinkRight not in LightOn) implies once (PitmanArm.heightState = Downward5 or PitmanArm.heightState = Downward7 ) --or HazardWarningSwitch.state=On)
-	)
-}
-
-assert C {
-	always (
-		(blinkRight in LightOn and blinkLeft not in LightOn) implies once (PitmanArm.heightState = Upward5 or PitmanArm.heightState = Upward7 ) --or HazardWarningSwitch.state=On)
-	)
-}
-
-assert D {
-	always (
-		(blinkLeft in LightOn and blinkRight in LightOn) implies (HazardWarningSwitch.state=On)
-	)
-}
-
-check D
-//run{eventually (fullBraking and (eventually middleBrakeLight.pattern = MBL_Off))}
-
-run{eventually fullBraking and eventually stopBraking}
+run{eventually normalBraking}
 
 //run { eventually some LightOn and (eventually reverse) }
