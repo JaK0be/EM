@@ -335,3 +335,21 @@ fact { --Para existirem luzes ligadas é necessário a ignição estar ligada
 run{eventually normalBraking}
 
 //run { eventually some LightOn and (eventually reverse) }
+
+// Propriedades
+
+// fairness
+
+// liveness
+
+// safety
+
+// Visto que muitos das propriedade que poderiam ser verificadas se encontram
+// diretamente implementados através de factos (eg. os piscas estarem ligados
+// quando o HazardWarningSwitch estiverem em posição On), o grupo achou difícil
+// especificar quais as propriedades de safety a verificar.
+
+check blinking {
+	once blinkLeft7 and (not once 
+}
+
