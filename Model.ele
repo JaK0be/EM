@@ -35,7 +35,8 @@ one sig blinkLeft, blinkRight,
 one sig middleBrakeLight extends Light {
 	var pattern : one middleBrakeLightPattern
 }
-enum middleBrakeLightPattern { MBL_Off, MBL_On, MBL_Blinking_On, MBL_Blinking_Off}
+
+enum middleBrakeLightPattern { MBL_Off, MBL_On}
 
 var sig LightOn in Light {}
 
@@ -175,6 +176,19 @@ pred hazard{
 	pitman
 }
 
+pred hazardOff {
+	HazardWarningSwitch.state = On
+	HazardWarningSwitch.state' = Off
+	(blinkRight + blinkLeft) not in LightOn'
+	keyState' = keyState
+	ReverseGear.state' = ReverseGear.state
+	Brake.state' = Brake.state
+	PitmanArm.deepState' = PitmanArm.deepState
+	PitmanArm.heightState' = PitmanArm.heightState
+	pitman
+}
+
+
 pred reverse{
 	ReverseGear.state = NotEngaged 
 	ReverseGear.state' = Engaged
@@ -209,9 +223,10 @@ pred normalBraking{
 }
 
 pred fullBraking{
+	Brake.state != Full
 	Brake.state' = Full
 	sideBrakeLights in LightOn' //A middleBrakeLight necessita de estar a piscar
-	middleBrakeLight in LightOn'	
+	middleBrakeLight.pattern' = MBL_On
 	keyState' = keyState
 	ReverseGear.state' = ReverseGear.state
 	PitmanArm.deepState' = PitmanArm.deepState
@@ -279,6 +294,19 @@ fact lights {
 	)
 }
 
+// blinking middle brake light
+fact {
+	always (
+		(not fullBraking implies (middleBrakeLight.pattern = MBL_On implies middleBrakeLight.pattern' = MBL_Off) and
+		(middleBrakeLight.pattern = MBL_Off implies middleBrakeLight.pattern' = MBL_On)) and
+		middleBrakeBlink in LightOn and (middleBrakeBlink = none implies middleBrakeLight not in LightOn)
+	)
+}
+
+fun middleBrakeBlink : some middleBrakeLight {
+	(middleBrakeLight.pattern = MBL_On and Brake.state = Full) implies middleBrakeLight else none
+}
+
 // predicados auxiliares
 
 pred pitman {
@@ -320,6 +348,7 @@ assert D {
 	)
 }
 
+check D
 //run{eventually (fullBraking and (eventually middleBrakeLight.pattern = MBL_Off))}
 
 run{eventually fullBraking and eventually stopBraking}
