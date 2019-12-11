@@ -8,28 +8,35 @@
 <defaultedge/>
 
 <node>
-   <type name="AlwaysOff"/>
-   <type name="AlwaysOn"/>
    <type name="Backward"/>
+   <type name="blinkLeft"/>
+   <type name="blinkRight"/>
    <type name="Downward5"/>
    <type name="Downward7"/>
    <type name="Engaged"/>
-   <type name="Frontward"/>
+   <type name="Forward"/>
    <type name="Full"/>
    <type name="highBeamLights"/>
    <type name="Int"/>
    <type name="KeyInIgnitionOnPosition"/>
    <type name="KeyInserted"/>
-   <type name="Light"/>
+   <type name="lowBeamLeft"/>
+   <type name="lowBeamRight"/>
+   <type name="MBL_Blinking_Off"/>
+   <type name="MBL_Blinking_On"/>
+   <type name="MBL_Off"/>
+   <type name="MBL_On"/>
    <type name="Neutral"/>
+   <type name="Neutro"/>
    <type name="NoKeyInserted"/>
    <type name="None"/>
    <type name="Normal"/>
    <type name="NotEngaged"/>
    <type name="Off"/>
    <type name="On"/>
+   <type name="reverseLight"/>
+   <type name="sideBrakeLights"/>
    <type name="String"/>
-   <type name="Temporary"/>
    <type name="univ"/>
    <type name="Upward5"/>
    <type name="Upward7"/>
@@ -38,6 +45,7 @@
    <type name="open$5/Ord"/>
    <type name="open$6/Ord"/>
    <type name="open$7/Ord"/>
+   <type name="open$8/Ord"/>
    <type name="ordering/Ord"/>
    <type name="seq/Int"/>
 </node>
@@ -62,35 +70,29 @@
    <type name="Ignition"/>
 </node>
 
-<node shape="Circle" color="Green">
+<node visible="no">
+   <type name="BrakeState"/>
+   <type name="DeepPitmanArmState"/>
+   <type name="HazardWarningSwitchState"/>
+   <type name="HeightPitmanArmState"/>
+   <type name="KeyState"/>
+   <type name="Light"/>
+   <type name="middleBrakeLight"/>
+   <type name="middleBrakeLightPattern"/>
+   <type name="ReverseGearState"/>
+</node>
+
+<node visible="yes" shape="Circle" color="Green">
    <set name="this/LightOn" type="Light"/>
 </node>
 
-<node visible="no">
-   <type name="blinkLeft"/>
-   <type name="blinkRight"/>
-   <type name="BrakeState"/>
-   <type name="HazardWarningSwitchState"/>
-   <type name="highBeamPattern"/>
-   <type name="KeyState"/>
-   <type name="lowBeamLeft"/>
-   <type name="lowBeamRight"/>
-   <type name="middleBrakeLight"/>
-   <type name="PitmanArmState"/>
-   <type name="ReverseGearState"/>
-   <type name="reverseLight"/>
-   <type name="sideBrakeLights"/>
-</node>
-
-<edge attribute="yes">
-   <relation name="pattern"> <type name="highBeamLights"/> <type name="highBeamPattern"/> </relation>
-</edge>
-
 <edge visible="no" attribute="yes">
+   <relation name="deepState"> <type name="PitmanArm"/> <type name="DeepPitmanArmState"/> </relation>
+   <relation name="heightState"> <type name="PitmanArm"/> <type name="HeightPitmanArmState"/> </relation>
    <relation name="keyState"> <type name="Ignition"/> <type name="KeyState"/> </relation>
+   <relation name="pattern"> <type name="middleBrakeLight"/> <type name="middleBrakeLightPattern"/> </relation>
    <relation name="state"> <type name="Brake"/> <type name="BrakeState"/> </relation>
    <relation name="state"> <type name="HazardWarningSwitch"/> <type name="HazardWarningSwitchState"/> </relation>
-   <relation name="state"> <type name="PitmanArm"/> <type name="PitmanArmState"/> </relation>
    <relation name="state"> <type name="ReverseGear"/> <type name="ReverseGearState"/> </relation>
 </edge>
 
