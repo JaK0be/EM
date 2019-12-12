@@ -1,54 +1,76 @@
+/*
+Temas: sistema de luzes (parcial), mercado europeu
+Autores:
+	- Alexandre Pinho (A82441)
+	- Pedro Gonçalves (A82313)
+*/
+
 one sig Ignition {
 	var keyState : one KeyState
 }
+//Estados da Chave na Ignição
 enum KeyState { NoKeyInserted, KeyInserted, KeyInIgnitionOnPosition }
 
 one sig PitmanArm {
 	var heightState : one HeightPitmanArmState,
 	var deepState : one DeepPitmanArmState
 }
-
+//Posições PitmanArm (Tanto em altura(piscas), como profundidade(máximos)
 enum HeightPitmanArmState { Neutral, Downward7, Upward7}
 enum DeepPitmanArmState { Neutro,Backward,Forward}
 
 one sig HazardWarningSwitch{
 	var state : one HazardWarningSwitchState
 }
+//Estados HazardWarningSwitch
 enum HazardWarningSwitchState { On,Off }
 
 one sig Brake{
 	var state : one BrakeState
 }
+//Estados uso dos Travões
+//None - Travões não estão a ser usados
+//Normal - Ângulo de aplicação do pedal do travão entre 3º e 40º
+//Full - Ângulo de aplicação do pedal do travão superior a 40º
 enum BrakeState { None, Normal, Full }
 
 one sig ReverseGear {
 	var state : one ReverseGearState
 }
+//Estados da mudança de marcha-atrás
 enum ReverseGearState{ NotEngaged, Engaged }
 
 abstract sig Light {}
+//Enumeração das luzes do veículo
 one sig blinkLeft, blinkRight,
 		highBeamLights,
 		sideBrakeLights,
 		reverseLight extends Light {}
+//Conjunto das luzes ligadas atualmente
+var sig LightOn in Light {}
 
 one sig middleBrakeLight extends Light {
 	var pattern : one middleBrakeLightPattern
 }
-
+//Estado da luz de travagem central
+//MBL_OFF - Luz desligada
+//MBL_ON - Luz ligada
 enum middleBrakeLightPattern { MBL_Off, MBL_On}
 
 one sig turnLight {
 	var pattern : one TurnLightPattern
 }
-
+//Estado das luzes dos piscas (Servem para definir o ligar e apagar dos mesmos)
+//TL_On - Luz do pisca ligada
+//TL_Off - Luz do pisca desligada
 enum TurnLightPattern { TL_On, TL_Off }
 
-var sig LightOn in Light {}
+----------------------------------------------
+//Predicados que representam transições no sistema
 
-// predicados que representam transições
-
-pred putKeyOnIgnition {-- Não limitei o comportamento dos "piscas" pois estes podem ser ligados em qualquer instante
+//Transição de colocar a chave na ignição
+//Permite que os 4 piscas sejam utilizados
+pred putKeyOnIgnition {
 	Ignition.keyState = NoKeyInserted
 	Ignition.keyState' = KeyInserted
 	ReverseGear.state' = ReverseGear.state
@@ -60,7 +82,9 @@ pred putKeyOnIgnition {-- Não limitei o comportamento dos "piscas" pois estes p
 		LightOn - (blinkLeft + blinkRight + middleBrakeLight)
 }
 
-pred putKeyOnPosition {-- Não limitei o comportamento dos "piscas" pois estes podem ser ligados em qualquer instante
+//Transição de ligar o carro
+//Permite que os 4 piscas sejam utilizados
+pred putKeyOnPosition {
 	Ignition.keyState = KeyInserted
 	Ignition.keyState' = KeyInIgnitionOnPosition
 	ReverseGear.state' = ReverseGear.state
@@ -72,6 +96,7 @@ pred putKeyOnPosition {-- Não limitei o comportamento dos "piscas" pois estes p
 		LightOn - (blinkLeft + blinkRight + middleBrakeLight)
 }
 
+//Transição que representa ligar os piscas da esquerda no modo de ativação permanente
 pred blinkLeft7 {
 	Ignition.keyState = KeyInIgnitionOnPosition
 	PitmanArm.heightState = Neutral
@@ -86,6 +111,7 @@ pred blinkLeft7 {
 		LightOn - (blinkLeft + blinkRight + middleBrakeLight)
 }
 
+//Transição que representa ligar os piscas da direita no modo de ativação permanente
 pred blinkRight7 {
 	Ignition.keyState = KeyInIgnitionOnPosition
 	PitmanArm.heightState = Neutral
@@ -100,6 +126,7 @@ pred blinkRight7 {
 		LightOn - (blinkLeft + blinkRight + middleBrakeLight)
 }
 
+//Transição que representa ligar os máximos no modo de ativação permanente
 pred pitmanBackward {
 	Ignition.keyState = KeyInIgnitionOnPosition
 	PitmanArm.deepState = Neutro
@@ -113,6 +140,7 @@ pred pitmanBackward {
 		LightOn - (highBeamLights + blinkLeft + blinkRight + middleBrakeLight)
 }
 
+//Transição que representa desligar os máximos de ativação permanente
 pred pitmanBackwardOff {
 	Ignition.keyState = KeyInIgnitionOnPosition
 	PitmanArm.deepState' = Backward
@@ -126,6 +154,7 @@ pred pitmanBackwardOff {
 		LightOn - (highBeamLights + blinkLeft + blinkRight + middleBrakeLight)
 }
 
+//Transição que representa ligar os máximos no modo de ativação temporária
 pred pitmanForward {
 	Ignition.keyState = KeyInIgnitionOnPosition
 	PitmanArm.deepState = Neutro
@@ -139,6 +168,7 @@ pred pitmanForward {
 		LightOn - (highBeamLights + blinkLeft + blinkRight + middleBrakeLight)
 }
 
+//Transição que representa desligar os máximos de ativação temporária
 pred pitmanForwardOff {
 	Ignition.keyState = KeyInIgnitionOnPosition
 	PitmanArm.deepState' = Forward
@@ -152,7 +182,7 @@ pred pitmanForwardOff {
 		LightOn - (highBeamLights + blinkLeft + blinkRight + middleBrakeLight)
 }
 
-
+//Predicado que representa o não acontecimento de mudanças no sistema
 pred skip {
 	keyState' = keyState
 	PitmanArm.deepState' = PitmanArm.deepState
@@ -164,6 +194,7 @@ pred skip {
 		LightOn - (blinkLeft + blinkRight + middleBrakeLight)
 }
 
+//Predicado que representa a ativação dos 4 piscas
 pred hazard{
 	HazardWarningSwitch.state = Off
 	HazardWarningSwitch.state' = On
@@ -176,6 +207,7 @@ pred hazard{
 		LightOn - (blinkLeft + blinkRight + middleBrakeLight)
 }
 
+//Predicado que representa a desativação dos 4 piscas
 pred hazardOff {
 	HazardWarningSwitch.state = On
 	HazardWarningSwitch.state' = Off
@@ -189,7 +221,7 @@ pred hazardOff {
 		LightOn - (blinkLeft + blinkRight + middleBrakeLight)
 }
 
-
+//Predicado que representa o engate da mudança de marcha-trás
 pred reverse{
 	ReverseGear.state = NotEngaged 
 	ReverseGear.state' = Engaged
@@ -203,6 +235,7 @@ pred reverse{
 		LightOn - (reverseLight + blinkLeft + blinkRight + middleBrakeLight)
 }
 
+//Predicado que representa o desengate da mudança de marcha-trás
 pred outReverse{
 	ReverseGear.state = Engaged 
 	ReverseGear.state' = NotEngaged
@@ -216,6 +249,7 @@ pred outReverse{
 		LightOn - (reverseLight + blinkLeft + blinkRight + middleBrakeLight)
 }
 
+//Predicado que representa a travagem quando o ângulo da aplicação do pedal do travão varia entre 3º e 40º
 pred normalBraking{
 	Brake.state = None
 	Brake.state' = Normal
@@ -229,10 +263,11 @@ pred normalBraking{
 		LightOn - (sideBrakeLights + blinkLeft + blinkRight + middleBrakeLight)
 }
 
+//Predicado que representa a travagem quando o ângulo da aplicação do pedal do travão é superior a 40º
 pred fullBraking{
 	Brake.state != Full
 	Brake.state' = Full
-	sideBrakeLights in LightOn' //A middleBrakeLight necessita de estar a piscar
+	sideBrakeLights in LightOn'
 	middleBrakeLight.pattern' = MBL_On
 	keyState' = keyState
 	ReverseGear.state' = ReverseGear.state
@@ -243,9 +278,11 @@ pred fullBraking{
 		LightOn - (sideBrakeLights + blinkLeft + blinkRight + middleBrakeLight)
 }
 
+//Predicado que representa o diminuir do ângulo da aplicação do pedal do travão para valores inferiores a 3º
 pred stopBraking {
 	Brake.state in (Full + Normal)
 	Brake.state' = None
+	sideBrakeLights not in LightOn'
 	keyState' = keyState
 	ReverseGear.state' = ReverseGear.state
 	HazardWarningSwitch.state = HazardWarningSwitch.state'
@@ -255,8 +292,11 @@ pred stopBraking {
 		LightOn - (sideBrakeLights + blinkLeft + blinkRight + middleBrakeLight)
 }
 
-// estado inicial e transições
+-------------------------------------------------
+//Estado Inicial e Transições no sistema
 
+//Estado Inicial Sistema
+//Chave não inserida, PitmanArm em posição neutra e luzes desligadas
 fact init {
 	Ignition.keyState = NoKeyInserted
 	PitmanArm.deepState = Neutro
@@ -267,6 +307,7 @@ fact init {
 	no LightOn
 }
 
+//Transições possiveis de executar no sistema
 fact transitions {
 	always (
 		putKeyOnIgnition or putKeyOnPosition or
@@ -279,8 +320,13 @@ fact transitions {
 		)
 }
 
-// outros factos
+-----------------------------------------------
+//Outros Factos
 
+/*
+* Facto que garante que se os máximos se encontram ligados, então significa que o
+* PitmanArm se encontra na posição Forward ou Backward
+*/
 fact lights {
 	always (
 		PitmanArm.deepState in (Forward + Backward) implies highBeamLights in LightOn and
@@ -288,7 +334,11 @@ fact lights {
 	)
 }
 
-// blinking middle brake light
+// Middle Brake Light
+/*
+* Facto que garante que aquando da aplicação de um ângulo no pedal do travão superior a
+* 40º, a luz de travagem do meio começa a piscar. 
+*/
 fact {
 	always (
 		(not fullBraking implies (middleBrakeLight.pattern = MBL_On implies middleBrakeLight.pattern' = MBL_Off) and
@@ -301,34 +351,46 @@ fun middleBrakeBlink : some middleBrakeLight {
 	(middleBrakeLight.pattern = MBL_On and Brake.state = Full) implies middleBrakeLight else none
 }
 
-// blinking turn lights
+// Piscas
+
+/*
+ *  Os piscas são modelados de forma a, se estiverem acesos, as suas luzes alternarem
+ * entre ligadas e desligadas de instante para instante de tempo. Para isso, é criado um
+ * sinal artificial (turnLight.pattern) que está a cada transição a alternar entre ligado
+ * (TL_On) e desligado (TL_Off), com a exceção de quando uma operação (blinkLeft7,
+ * blinkRight7, ou hazard) necessita que os piscas sejam acionados logo no próximo instante.
+ * Nessa situação, o turnLight.pattern está obrigatoriamente em TL_On, como determinam os
+ * predicados das transições respetivas (turnLight.pattern = TL_On).
+ *
+ *  O segundo facto aqui indica, com recurso à função auxiliar turnLightsBlink, que as luzes
+ * dos piscas de cada devem estar acesas quando o sinal artificial estiver ligado e quando o
+ * PitmanArm estiver na posição adequada, exceto se for necessário ativar as luzes todas
+ * quando o HazardWarningSwitch estiver ativado.
+*/
 fact {
 	always (
 		(not (blinkLeft7 or blinkRight7 or hazard) implies (turnLight.pattern = TL_On implies turnLight.pattern' = TL_Off) and
 		(turnLight.pattern = TL_Off implies turnLight.pattern' = TL_On)) and
-		turnLightsBlink in LightOn and ((blinkLeft + blinkRight) - turnLightsBlink not in LightOn or HazardWarningSwitch.state = On) and
-		(HazardWarningSwitch.state = On implies (blinkLeft + blinkRight) in LightOn) and
-		(PitmanArm.deepState in (Forward + Backward) implies highBeamLights in LightOn)
+		turnLightsBlink in LightOn and ((blinkLeft + blinkRight) - turnLightsBlink not in LightOn or HazardWarningSwitch.state = On) 
 	)
 }
 
+// Função que retorna o conjunto de piscas que deve estar iluminado, conforme o sinal
+// artificial e o estado do PitmanArm
 fun turnLightsBlink : some (blinkLeft + blinkRight) {
 	(turnLight.pattern = TL_On and PitmanArm.heightState = Downward7) implies blinkLeft else
 	(turnLight.pattern = TL_On and PitmanArm.heightState = Upward7) implies blinkRight else
 	none
 }
 
-// predicados auxiliares
-
-pred pitman {
-	{}//PitmanArm.heightState in HeightPitmanArmState - (Upward5 + Downward5) implies PitmanArm.heightState' = PitmanArm.heightState
-	//PitmanArm.heightState in Upward5 + Downward5 implies PitmanArm.heightState' = Neutral
+// Factos a indicar quando os piscas devem estar todos ligados simultaneamente e quando devem
+// estar ligados os máximos.
+fact {
+    always {
+		(HazardWarningSwitch.state = On implies (blinkLeft + blinkRight) in LightOn) and
+		(PitmanArm.deepState in (Forward + Backward) implies highBeamLights in LightOn)
+    }
 }
-
-/*
-fact { --Para existirem luzes ligadas é necessário a ignição estar ligada
-	always ((some LightOn) implies Ignition.keyState = KeyInIgnitionOnPosition)
-}*/
 
 // ambiente de execução
 
@@ -340,16 +402,46 @@ run{eventually normalBraking}
 
 // fairness
 
+// O grupo não foi capaz de identificar propriedades de fairness a verificar.
+
 // liveness
+
+// Se o sistema estiver sempre ativo, então é sempre verdade que eventualmente algumas luzes vão estar acesas
+assert liveness1 {
+    always (not skip) implies (always (eventually some LightOn))
+}
+check liveness1
 
 // safety
 
-// Visto que muitos das propriedade que poderiam ser verificadas se encontram
-// diretamente implementados através de factos (eg. os piscas estarem ligados
-// quando o HazardWarningSwitch estiverem em posição On), o grupo achou difícil
-// especificar quais as propriedades de safety a verificar.
-
-check blinking {
-	once blinkLeft7 and (not once 
+// Se os máximos se encontram ligados, então a posição em profundidade do PitmanArm não é neutra 
+assert safety1 {
+	always(
+		(highBeamLights in LightOn) implies PitmanArm.deepState in (Forward+Backward)
+	)
 }
+check safety1
 
+// Se os piscas de ambos os lados estiverem acesos, significa que foram ativadas as luzes de perigo
+assert safety2 {
+	always (
+		(blinkLeft + blinkRight) in LightOn implies (HazardWarningSwitch.state=On)
+	)
+}
+check safety2
+
+// Se as luzes de marcha-atrás se encontram ligadas, significa que a mudança de marcha-atrás está engrenhada
+assert safety3 {
+	always (
+		(reverseLight in LightOn) implies (ReverseGear.state=Engaged)
+	)
+}
+check safety3
+	
+// Se as luzes de travagem laterais encontrarem-se acessas, significa que o ângulo do pedal do travão é superior a 3º	
+assert safety4 {
+	always (
+		(sideBrakeLights in LightOn) implies Brake.state in (Normal+Full)
+	)
+}
+check safety4
