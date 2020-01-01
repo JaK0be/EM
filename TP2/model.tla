@@ -1,7 +1,9 @@
 ------------------------------- MODULE model -------------------------------
 EXTENDS Integers
 
-VARIABLE pitmanArmHeight, pitmanArmDepth, hazardWarningSwitch, brake, reverseGear, keyState,
+VARIABLE pitmanArmHeight, pitmanArmDepth, hazardWarningSwitch,
+         brake, sideBrakeLightsActivated, middleBrakeLightFlashing,
+         reverseGear, keyState,
          blinkLeft, blinkRight,
          highBeamLights,
          sideBrakeLights, middleBrakeLight,
@@ -10,7 +12,9 @@ VARIABLE pitmanArmHeight, pitmanArmDepth, hazardWarningSwitch, brake, reverseGea
 InvType == /\ pitmanArmHeight \in 0..2
            /\ pitmanArmDepth \in 0..2 \*0-Neutral;1-Backward;2-Forward
            /\ hazardWarningSwitch \in {0,1}
-           /\ brake \in 0..2
+           /\ brake \in 0..225 \* 225 = 45 degrees
+           /\ sideBrakeLightsActivated \in {0,1}
+           /\ middleBrakeLightFlashing \in {0,1}
            /\ reverseGear \in {0,1}
            /\ keyState \in 0..2
            /\ blinkLeft \in {0,1}
@@ -24,6 +28,8 @@ Init == /\ pitmanArmHeight = 0
         /\ pitmanArmDepth = 0
         /\ hazardWarningSwitch = 0
         /\ brake = 0
+        /\ sideBrakeLightsActivated = 0
+        /\ middleBrakeLightFlashing = 0
         /\ reverseGear = 0
         /\ keyState = 0
         /\ blinkLeft = 0
@@ -33,9 +39,17 @@ Init == /\ pitmanArmHeight = 0
         /\ middleBrakeLight = 0
         /\ reverseLight = 0
 
+SideBrakeLights == IF sideBrakeLightsActivated = 1
+                   THEN (sideBrakeLights' = 1 /\ sideBrakeLightsActivated' = IF brake < 5  THEN 0 ELSE sideBrakeLightsActivated)
+                   ELSE (sideBrakeLights' = 0 /\ sideBrakeLightsActivated' = IF brake > 15 THEN 1 ELSE sideBrakeLightsActivated)
+
+MiddleBrakeLight == IF middleBrakeLightFlashing = 1
+                    THEN (middleBrakeLight' = 1 - middleBrakeLight /\ middleBrakeLightFlashing' = IF brake = 0   THEN 0 ELSE middleBrakeLightFlashing)
+                    ELSE (middleBrakeLight' = 0                    /\ middleBrakeLightFlashing' = IF brake > 200 THEN 1 ELSE middleBrakeLightFlashing)
 
 putKeyOnIgnition == /\ keyState = 0
                     /\ keyState' = 1
+                    /\ SideBrakeLights /\ MiddleBrakeLight
                     /\ UNCHANGED << pitmanArmHeight,pitmanArmDepth,
                                     hazardWarningSwitch, brake,
                                     reverseGear, blinkLeft,blinkRight,
@@ -45,6 +59,7 @@ putKeyOnIgnition == /\ keyState = 0
 
 putKeyOnPosition == /\ keyState = 1
                     /\ keyState' = 2
+                    /\ SideBrakeLights /\ MiddleBrakeLight
                     /\ UNCHANGED << pitmanArmHeight,pitmanArmDepth,
                                     hazardWarningSwitch, brake,
                                     reverseGear, blinkLeft,blinkRight,
@@ -55,6 +70,7 @@ pitmanBackward == /\ keyState = 2
                   /\ pitmanArmDepth = 0
                   /\ pitmanArmDepth' = 1
                   /\ highBeamLights' = 1
+                  /\ SideBrakeLights /\ MiddleBrakeLight
                   /\ UNCHANGED << pitmanArmHeight, hazardWarningSwitch,
                                   brake, reverseGear, blinkLeft,
                                   blinkRight, sideBrakeLights,
@@ -65,6 +81,7 @@ pitmanBackwardOff == /\ keyState = 2
                      /\ pitmanArmDepth = 1
                      /\ pitmanArmDepth' = 0
                      /\ highBeamLights' = 0
+                     /\ SideBrakeLights /\ MiddleBrakeLight
                      /\ UNCHANGED << pitmanArmHeight, hazardWarningSwitch,
                                   brake, reverseGear, blinkLeft,
                                   blinkRight, sideBrakeLights,
@@ -75,6 +92,7 @@ pitmanForward == /\ keyState = 2
                  /\ pitmanArmDepth = 0
                  /\ pitmanArmDepth' = 2
                  /\ highBeamLights' = 1
+                 /\ SideBrakeLights /\ MiddleBrakeLight
                  /\ UNCHANGED << pitmanArmHeight, hazardWarningSwitch,
                                  brake, reverseGear, blinkLeft,
                                  blinkRight, sideBrakeLights,
@@ -85,6 +103,7 @@ pitmanForwardOff == /\ keyState = 2
                     /\ pitmanArmDepth = 2
                     /\ pitmanArmDepth' = 0
                     /\ highBeamLights' = 0
+                    /\ SideBrakeLights /\ MiddleBrakeLight
                     /\ UNCHANGED << pitmanArmHeight, hazardWarningSwitch,
                                     brake, reverseGear, blinkLeft,
                                     blinkRight, sideBrakeLights,
@@ -94,6 +113,7 @@ pitmanForwardOff == /\ keyState = 2
 reverse == /\ reverseGear = 0
            /\ reverseGear' = 1
            /\ reverseLight' = 1
+           /\ SideBrakeLights /\ MiddleBrakeLight
            /\ UNCHANGED << pitmanArmHeight,pitmanArmDepth,
                            hazardWarningSwitch,brake,
                            blinkLeft,blinkRight,sideBrakeLights,
@@ -103,12 +123,12 @@ reverse == /\ reverseGear = 0
 outReverse == /\ reverseGear = 1
               /\ reverseGear' = 0
               /\ reverseLight' = 0
+              /\ SideBrakeLights /\ MiddleBrakeLight
               /\ UNCHANGED << pitmanArmHeight,pitmanArmDepth,
                               hazardWarningSwitch,brake,
                               blinkLeft,blinkRight,sideBrakeLights,
                               highBeamLights, middleBrakeLight,
                               keyState >>
-
 
 Next == \/ putKeyOnIgnition
         \/ putKeyOnPosition
@@ -120,7 +140,7 @@ Next == \/ putKeyOnIgnition
         \/ reverse
 
 vars == <<pitmanArmHeight, pitmanArmDepth, hazardWarningSwitch, brake, reverseGear, keyState,
-          blinkLeft, blinkRight,
+          blinkLeft, blinkRight, sideBrakeLightsActivated, middleBrakeLightFlashing,
           highBeamLights,
           sideBrakeLights, middleBrakeLight,
           reverseLight>>
