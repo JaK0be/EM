@@ -7,12 +7,12 @@ VARIABLE pitmanArmHeight, pitmanArmDepth, hazardWarningSwitch, brake, reverseGea
          sideBrakeLights, middleBrakeLight,
          reverseLight
 
-InvType == /\ pitmanArmHeight \in {0,2}
-           /\ pitmanArmDepth \in {0,2} \*0-Neutral;1-Backward;2-Forward
+InvType == /\ pitmanArmHeight \in 0..2
+           /\ pitmanArmDepth \in 0..2 \*0-Neutral;1-Backward;2-Forward
            /\ hazardWarningSwitch \in {0,1}
-           /\ brake \in {0,2}
+           /\ brake \in 0..2
            /\ reverseGear \in {0,1}
-           /\ keyState \in {0,2}
+           /\ keyState \in 0..2
            /\ blinkLeft \in {0,1}
            /\ blinkRight \in {0,1}
            /\ highBeamLights \in {0,1} \*0-Desligado;1-Ligado
@@ -32,7 +32,7 @@ Init == /\ pitmanArmHeight = 0
         /\ sideBrakeLights = 0
         /\ middleBrakeLight = 0
         /\ reverseLight = 0
-        
+
 
 putKeyOnIgnition == /\ keyState = 0
                     /\ keyState' = 1
@@ -41,15 +41,15 @@ putKeyOnIgnition == /\ keyState = 0
                                     reverseGear, blinkLeft,blinkRight,
                                     highBeamLights, sideBrakeLights,
                                     middleBrakeLight, reverseLight >>
-                                    
-                                  
+
+
 putKeyOnPosition == /\ keyState = 1
                     /\ keyState' = 2
                     /\ UNCHANGED << pitmanArmHeight,pitmanArmDepth,
                                     hazardWarningSwitch, brake,
                                     reverseGear, blinkLeft,blinkRight,
                                     highBeamLights, sideBrakeLights,
-                                    middleBrakeLight, reverseLight >>                     
+                                    middleBrakeLight, reverseLight >>
 
 pitmanBackward == /\ keyState = 2
                   /\ pitmanArmDepth = 0
@@ -60,7 +60,7 @@ pitmanBackward == /\ keyState = 2
                                   blinkRight, sideBrakeLights,
                                   middleBrakeLight, reverseLight,
                                   keyState >>
-                                  
+
 pitmanBackwardOff == /\ keyState = 2
                      /\ pitmanArmDepth = 1
                      /\ pitmanArmDepth' = 0
@@ -70,7 +70,7 @@ pitmanBackwardOff == /\ keyState = 2
                                   blinkRight, sideBrakeLights,
                                   middleBrakeLight, reverseLight,
                                   keyState >>
-                                  
+
 pitmanForward == /\ keyState = 2
                  /\ pitmanArmDepth = 0
                  /\ pitmanArmDepth' = 2
@@ -97,19 +97,36 @@ reverse == /\ reverseGear = 0
            /\ UNCHANGED << pitmanArmHeight,pitmanArmDepth,
                            hazardWarningSwitch,brake,
                            blinkLeft,blinkRight,sideBrakeLights,
-                           middleBrakeLight,
+                           highBeamLights, middleBrakeLight,
                            keyState >>
-           
+
 outReverse == /\ reverseGear = 1
               /\ reverseGear' = 0
               /\ reverseLight' = 0
               /\ UNCHANGED << pitmanArmHeight,pitmanArmDepth,
                               hazardWarningSwitch,brake,
                               blinkLeft,blinkRight,sideBrakeLights,
-                              middleBrakeLight,
+                              highBeamLights, middleBrakeLight,
                               keyState >>
 
 
+Next == \/ putKeyOnIgnition
+        \/ putKeyOnPosition
+        \/ pitmanBackward
+        \/ pitmanBackwardOff
+        \/ pitmanForward
+        \/ pitmanForwardOff
+        \/ outReverse
+        \/ reverse
+
+vars == <<pitmanArmHeight, pitmanArmDepth, hazardWarningSwitch, brake, reverseGear, keyState,
+          blinkLeft, blinkRight,
+          highBeamLights,
+          sideBrakeLights, middleBrakeLight,
+          reverseLight>>
+
+
+Spec == Init /\ [][Next]_vars
 
 =============================================================================
 \* Modification History
