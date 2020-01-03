@@ -47,6 +47,30 @@ MiddleBrakeLight == IF middleBrakeLightFlashing = 1
                     THEN (middleBrakeLight' = 1 - middleBrakeLight /\ middleBrakeLightFlashing' = IF brake = 0   THEN 0 ELSE middleBrakeLightFlashing)
                     ELSE (middleBrakeLight' = 0                    /\ middleBrakeLightFlashing' = IF brake > 200 THEN 1 ELSE middleBrakeLightFlashing)
 
+normalBraking == /\ brake = 0
+                 /\ brake' \in 15..200 \* Varia entre 3º e 40º
+                 /\ SideBrakeLights
+                 /\ UNCHANGED << keyState, pitmanArmHeight, pitmanArmDepth,
+                                 hazardWarningSwitch, reverseGear,
+                                 blinkLeft, blinkRight, highBeamLights,
+                                 middleBrakeLight, reverseLight >>
+                                 
+fullBraking == /\ brake \in 0..200 \*Garante que não está em fullBraking
+               /\ brake' \in 201..225
+               /\ SideBrakeLights /\ MiddleBrakeLight
+               /\ UNCHANGED << keyState, pitmanArmHeight, pitmanArmDepth,
+                               hazardWarningSwitch, reverseGear,
+                               blinkLeft, blinkRight, highBeamLights,
+                               reverseLight >>
+                               
+stopBraking == /\ brake \in 1..225
+               /\ brake' = 0
+               /\ SideBrakeLights /\ MiddleBrakeLight 
+               /\ UNCHANGED << keyState, pitmanArmHeight, pitmanArmDepth,
+                               hazardWarningSwitch, reverseGear,
+                               blinkLeft, blinkRight, highBeamLights,
+                               reverseLight >>
+
 putKeyOnIgnition == /\ keyState = 0
                     /\ keyState' = 1
                     /\ SideBrakeLights /\ MiddleBrakeLight
@@ -138,6 +162,9 @@ Next == \/ putKeyOnIgnition
         \/ pitmanForwardOff
         \/ outReverse
         \/ reverse
+        \/ normalBraking
+        \/ fullBraking
+        \/ stopBraking
 
 vars == <<pitmanArmHeight, pitmanArmDepth, hazardWarningSwitch, brake, reverseGear, keyState,
           blinkLeft, blinkRight, sideBrakeLightsActivated, middleBrakeLightFlashing,
@@ -150,5 +177,5 @@ Spec == Init /\ [][Next]_vars
 
 =============================================================================
 \* Modification History
-\* Last modified Mon Dec 30 01:45:44 WET 2019 by pedrogoncalves
+\* Last modified Fri Jan 03 16:47:20 WET 2020 by pedrogoncalves
 \* Created Sun Dec 29 22:40:26 WET 2019 by pedrogoncalves
