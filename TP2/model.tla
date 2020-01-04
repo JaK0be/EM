@@ -253,7 +253,8 @@ safety7 == []((highBeamLights = 1) => (pitmanArmDepth > 0)) \*Para máximos esta
 
 \** Liveness
 
-\*liveness == <>(blinkLeft=1)
+\* Assumindo fairness, é sempre possível chegar a um estado em que se liga pelo menos uma das luzes
+liveness1 == [](<>(blinkLeft=1 \/ blinkRight=1 \/ highBeamLights=1 \/ reverseLight=1 \/ sideBrakeLights=1))
   
 
 vars == <<pitmanArmHeight, pitmanArmDepth, hazardWarningSwitch, brake, reverseGear, keyState,
@@ -263,7 +264,21 @@ vars == <<pitmanArmHeight, pitmanArmDepth, hazardWarningSwitch, brake, reverseGe
           reverseLight>>
 
 
-Spec == Init /\ [][Next]_vars
+Spec == Init /\ [][Next]_vars /\ WF_vars(putKeyOnIgnition)
+                              /\ WF_vars(putKeyOnPosition)
+                              /\ WF_vars(pitmanBackward)
+                              /\ WF_vars(pitmanBackwardOff)
+                              /\ WF_vars(pitmanForward)
+                              /\ WF_vars(pitmanForwardOff)
+                              /\ WF_vars(outReverse)
+                              /\ WF_vars(reverse)
+                              /\ WF_vars(normalBraking)
+                              /\ WF_vars(fullBraking)
+                              /\ WF_vars(stopBraking)
+                              /\ WF_vars(pitmanUpward)
+                              /\ WF_vars(pitmanUpwardOff)
+                              /\ WF_vars(pitmanDownward)
+                              /\ WF_vars(pitmanDownwardOff)
 
 =============================================================================
 \* Modification History
