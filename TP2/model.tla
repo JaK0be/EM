@@ -313,6 +313,8 @@ vars == <<pitmanArmHeight, pitmanArmDepth, hazardWarningSwitch, brake, reverseGe
           reverseLight>>
 
 
+\* Para garantir fairness, os predicados WF garantem que cada operação será
+\* executada um número infinito de vezes enquanto for possível a sua execução
 Spec == Init /\ [][Next]_vars /\ WF_vars(putKeyOnIgnition)
                               /\ WF_vars(putKeyOnPosition)
                               /\ WF_vars(pitmanBackward)
